@@ -36,13 +36,11 @@ def load_data(dir, testskip=1):
         with open(os.path.join(dir, 'transforms_{}.json'.format(s)), 'r') as f:
             metas[s] = json.load(f)
 
-    all_imgs = []
-    all_poses = []
+    all_imgs, all_poses = [], []
     counts = [0]
     for s in splits:
         meta = metas[s]
-        imgs = []
-        poses = []
+        imgs, poses = [], []
         if s=='train' or testskip==0:
             skip = 1
         else:
