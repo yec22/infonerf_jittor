@@ -349,7 +349,7 @@ def train(args):
             print('saved checkpoints at', path)
 
         if (i % args.i_testset == 0) and (i > 0) and (len(i_test) > 0):
-            testsavedir = os.path.join(basedir, expname, 'testset_{:06d}'.format(i))
+            testsavedir = os.path.join(basedir, expname, 'testset_{:05d}'.format(i))
             os.makedirs(testsavedir, exist_ok=True)
             with jt.no_grad():
                 rgbs, disps = render_path(jt.float32(poses[i_test]), hwf, args.chunk, render_kwargs_test, gt_imgs=images[i_test], savedir=testsavedir)

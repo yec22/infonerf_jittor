@@ -1,4 +1,4 @@
-expname = synthetic/infonerf/lego
+expname = infonerf_lego
 basedir = ./logs
 datadir = ./data/nerf_synthetic/lego
 
