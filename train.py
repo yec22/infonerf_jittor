@@ -97,7 +97,7 @@ def train(args):
     far = 6.0
     i_train = np.array(args.train_scene)
     images = images[...,:3]*images[...,-1:] + (1.-images[...,-1:]) # white_background
-    print('Loaded blender', images.shape, render_poses.shape, hwf, args.datadir)
+    print('Loaded blender', images.shape, render_poses.shape, hwf)
     print('i_train:', i_train)
     print('TRAIN views are:', i_train)
     print('TEST views are:', i_test)
@@ -264,10 +264,10 @@ def train(args):
             test_psnr = mse2psnr(test_loss)
             test_redefine_psnr = img2psnr(jt.float32(rgbs), images[i_test])
 
-            tqdm.write(f"[TEST] Iter: {i} Loss: {test_loss.item()}  PSNR: {test_psnr.item()} redefine_PSNR: {test_redefine_psnr.item()}")
+            print(f"[TEST] Iter: {i} Loss: {test_loss.item()}  PSNR: {test_psnr.item()} redefine_PSNR: {test_redefine_psnr.item()}")
     
         if i % args.i_print == 0:
-            tqdm.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
+            print(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
         global_step += 1
 
         sys.stdout.flush()
