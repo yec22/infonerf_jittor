@@ -1,7 +1,7 @@
 # Reference: https://github.com/mjmjeong/InfoNeRF
 import os, sys, random
 import configargparse
-from tqdm import tqdm, trange
+from tqdm import trange
 import jittor as jt
 import numpy as np
 from model.utils import *
