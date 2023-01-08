@@ -59,6 +59,8 @@ def create_nerf(args):
         model.load_state_dict(ckpt['network_fn_state_dict'])
         if model_fine is not None:
             model_fine.load_state_dict(ckpt['network_fine_state_dict'])
+        
+        print("load checkpoints successfully: ", ckpt_path)
 
     render_kwargs_train = {
         'network_query_fn' : network_query_fn,
@@ -139,6 +141,16 @@ def train(args):
     render_poses = jt.float32(render_poses)
     images = jt.float32(images)
     poses = jt.float32(poses)
+
+    if args.render_only:
+        render_savedir = os.path.join(basedir, expname, 'render_results')
+        os.makedirs(render_savedir, exist_ok=True)
+        with jt.no_grad():
+            rgbs, _ = render_path(render_poses, hwf, args.chunk, render_kwargs_test, savedir=render_savedir)
+        print('Done, saving rendering results')
+        moviebase = os.path.join(basedir, expname, '{}'.format(expname.split('/')[-1]))
+        imageio.mimwrite(moviebase + '_rgb.mp4', to8b(rgbs), fps=30, quality=8)
+        exit(0)
 
     N_iters = args.N_iters + 1
     start = start + 1
@@ -265,6 +277,8 @@ def train(args):
             test_redefine_psnr = img2psnr(jt.float32(rgbs), images[i_test])
 
             print(f"[TEST] Iter: {i} Loss: {test_loss.item()}  PSNR: {test_psnr.item()} redefine_PSNR: {test_redefine_psnr.item()}")
+            print("test finish ...")
+            print("continue training ...")
     
         if i % args.i_print == 0:
             print(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")

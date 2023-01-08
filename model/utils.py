@@ -1,6 +1,7 @@
 import jittor as jt
 import numpy as np
-import imageio, tqdm, os
+import imageio, os
+from tqdm import tqdm
 
 img2mse = lambda x, y : jt.mean((x - y) ** 2)
 mse2psnr = lambda x : -10. * jt.log(x) / jt.log(jt.float32([10.]))
