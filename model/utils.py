@@ -16,6 +16,7 @@ def img2psnr(x, y):
     psnr = jt.stack(psnrs).mean()
     return psnr
 
+# get 3D rays for each pixel in 2D image
 def get_rays(H, W, focal, c2w):
     # sample point in 2D image space
     i, j = jt.meshgrid(jt.linspace(0, W-1, W), jt.linspace(0, H-1, H))
@@ -98,6 +99,7 @@ def sample_test_ray(rays_o, rays_d, viewdirs, network, z_vals, network_query):
 
     return rgb, sigma, depth_map
 
+# batchify the input and get the fn output
 def batchify(fn, chunk): 
     def ret(inputs):
         return jt.concat([fn(inputs[i:i+chunk]) for i in range(0, inputs.shape[0], chunk)], 0)
@@ -133,6 +135,7 @@ def render_rays(ray_batch,
     bounds = jt.reshape(ray_batch[...,6:8], [-1,1,2])
     near, far = bounds[...,0], bounds[...,1]
 
+    # stratified sampling
     t_vals = jt.linspace(0., 1., steps=N_samples)
     z_vals = near * (1.-t_vals) + far * (t_vals)
     z_vals = z_vals.expand([N_rays, N_samples])
@@ -170,6 +173,7 @@ def render_rays(ray_batch,
 
         rgb_map, disp_map, acc_map, weights, depth_map, others = raw2outputs(raw, z_vals, rays_d)
 
+    # return rendering results
     ret = {'rgb_map' : rgb_map, 'disp_map' : disp_map, 'acc_map' : acc_map, 'depth_map' : depth_map}
     ret['sigma'] = others['sigma']
     ret['alpha'] = others['alpha']

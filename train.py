@@ -20,16 +20,16 @@ random.seed(0)
 
 # instantiate NeRF's MLP model. (coarse and fine)
 def create_nerf(args):
-    embed_fn, input_ch = get_embedder(10)
-    embeddirs_fn, input_ch_views = get_embedder(4)
+    embed_fn, input_ch = get_embedder(10) # positional encoding
+    embeddirs_fn, input_ch_views = get_embedder(4) # positional encoding
     skips = [4]
     
-    model = NeRF(input_ch=input_ch, input_ch_views=input_ch_views, skips=skips)
+    model = NeRF(input_ch=input_ch, input_ch_views=input_ch_views, skips=skips) # coarse model
     grad_vars = list(model.parameters())
 
     model_fine = None
     if args.N_importance > 0:
-        model_fine = NeRF(input_ch=input_ch, input_ch_views=input_ch_views, skips=skips)
+        model_fine = NeRF(input_ch=input_ch, input_ch_views=input_ch_views, skips=skips) # fine model
         grad_vars += list(model_fine.parameters())
 
     network_query_fn = lambda inputs, viewdirs, network_fn : run_network(inputs, viewdirs, network_fn,
@@ -80,15 +80,15 @@ def create_nerf(args):
 # batchify the input and get the network output
 def run_network(inputs, viewdirs, fn, embed_fn, embeddirs_fn, netchunk=1024*64):
     inputs_flat = jt.reshape(inputs, [-1, inputs.shape[-1]])
-    embedded = embed_fn(inputs_flat)
+    embedded = embed_fn(inputs_flat) # position
 
     input_dirs = viewdirs[:,None].expand(inputs.shape)
     input_dirs_flat = jt.reshape(input_dirs, [-1, input_dirs.shape[-1]])
-    embedded_dirs = embeddirs_fn(input_dirs_flat)
-    embedded = jt.concat([embedded, embedded_dirs], -1)
+    embedded_dirs = embeddirs_fn(input_dirs_flat) # direction
+    embedded = jt.concat([embedded, embedded_dirs], -1) # network input
 
     outputs_flat = batchify(fn, netchunk)(embedded)
-    outputs = jt.reshape(outputs_flat, list(inputs.shape[:-1]) + [outputs_flat.shape[-1]])
+    outputs = jt.reshape(outputs_flat, list(inputs.shape[:-1]) + [outputs_flat.shape[-1]]) # restore dimension
     return outputs
 
 def train(args):
@@ -178,8 +178,8 @@ def train(args):
         else:
             coords = jt.stack(jt.meshgrid(jt.linspace(0, H-1, H), jt.linspace(0, W-1, W)), -1)
 
-        coords = jt.reshape(coords, [-1,2])
-        select_inds = np.random.choice(coords.shape[0], size=[N_rgb], replace=False)
+        coords = jt.reshape(coords, [-1,2]) # 2D image pixel
+        select_inds = np.random.choice(coords.shape[0], size=[N_rgb], replace=False) # select pixel
         select_coords = coords[select_inds].long()  # (N_rand, 2)
         rays_o = rays_o[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
         rays_d = rays_d[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
@@ -188,7 +188,7 @@ def train(args):
         
         # sampling for unseen rays to compute entropy loss     
         if args.entropy and (args.N_entropy !=0):
-            img_i = np.random.choice(len(images))
+            img_i = np.random.choice(len(images)) # unseen view
             target = images[img_i]
             pose = poses[img_i, :3,:4]
             rays_o, rays_d = get_rays(H, W, focal, jt.float32(pose))
@@ -219,7 +219,7 @@ def train(args):
         
         rgb, disp, acc, depth, extras = render(H, W, focal, chunk=args.chunk, rays=batch_rays, **render_kwargs_train)
         if args.entropy:
-            acc_raw = acc 
+            acc_raw = acc
             alpha_raw = extras['alpha']
 
         extras = {x:extras[x][:N_rgb] for x in extras}

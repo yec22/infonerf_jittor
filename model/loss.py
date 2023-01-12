@@ -5,7 +5,7 @@ class Entropy_Loss:
         super(Entropy_Loss, self).__init__()
         self.N_samples = N_rand
         self.threshold = threshold
-        self.N_entropy = N_entropy 
+        self.N_entropy = N_entropy
         
     def compute_loss(self, sigma, acc_map): # following paper equation (4)-(8)
         sigma = sigma[self.N_samples:]

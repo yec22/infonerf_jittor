@@ -12,7 +12,7 @@ class Embedder:
 
         d = 3
         embed_fns.append(lambda x : x)
-        out_dim = d     
+        out_dim = d
         max_freq = self.freq - 1
         N_freqs = self.freq
         
